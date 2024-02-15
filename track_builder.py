@@ -1,4 +1,5 @@
 import pygame
+from Track import Track
 
 
 # Example file showing a circle moving on screen
@@ -13,15 +14,8 @@ clock = pygame.time.Clock()
 running = True
 dt = 0
 
-checkpoints = []
-
-
-def get_side_points(point: tuple[int, int]):
-    pos = pygame.mouse.get_pos()
-    dx, dy = pos[0] - point[0], pos[1] - point[1]
-    opp_pos = point[0] - dx, point[1] - dy
-    return pos, opp_pos
-
+track_surface = pygame.Surface((WIDTH, HEIGHT))
+track = Track(track_surface, loop=True)
 
 while running:
     # poll for events
@@ -30,36 +24,26 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.MOUSEBUTTONDOWN:
-            print(event.type)
             point = pygame.mouse.get_pos()
-            checkpoints.append([point, None, None])
+            track.add_point(point)
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_z and pygame.key.get_mods() & pygame.KMOD_CTRL:
-                if checkpoints:
-                    checkpoints.pop()
+                track.remove_point()
+            if event.key == pygame.K_s and pygame.key.get_mods() & pygame.KMOD_CTRL:
+                track.save()
 
     # fill the screen with a color to wipe away anything from last frame
-    screen.fill("purple")
-    if checkpoints:
+    track_surface.fill("black")
+    screen.fill("white")
+    if track.checkpoints:
         click = pygame.mouse.get_pressed()[0]
         if click:
-            pos, pos_opp = get_side_points(checkpoints[-1][0])
-            checkpoints[-1][1] = pos
-            checkpoints[-1][2] = pos_opp
-        for checkpoint in checkpoints:
-            pygame.draw.circle(screen, "green", checkpoint[0], 5)
-            pygame.draw.circle(screen, "red", checkpoint[1], 5)
-            pygame.draw.circle(screen, "yellow", checkpoint[2], 5)
+            track.get_side_points()
 
-    inner_lines = [ch[2] for ch in checkpoints]
-    outer_lines = [ch[1] for ch in checkpoints]
-    if len(checkpoints) < 2:
-        pass
-    else:
-        pygame.draw.lines(screen, "red", False, outer_lines)
-        pygame.draw.lines(screen, "yellow", False, inner_lines)
-        pygame.draw.line(screen, "yellow", inner_lines[-1], inner_lines[0])
-        pygame.draw.line(screen, "red", outer_lines[-1], outer_lines[0])
+    track.draw_poly()
+    track.draw()
+
+    screen.blit(track_surface, (0, 0))
 
     # flip() the display to put your work on screen
     pygame.display.flip()
