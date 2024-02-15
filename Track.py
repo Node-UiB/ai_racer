@@ -53,7 +53,7 @@ class Track:
             elif i != -1:
                 if i == 0:
                     color = (128, 210, 128)
-                elif not self.loop and i == len(self.checkpoints)-2:
+                elif not self.loop and i == len(self.checkpoints) - 2:
                     color = self.finish_color
                 else:
                     color = self.track_color
