@@ -4,7 +4,7 @@ from Cars.RaceCar import RaceCar
 from CarController import CarController
 from Environment import Environment
 
-device = "cpu"
+device = "cuda"
 dtype = T.float64
 
 track_name = "Track-1"
@@ -17,18 +17,27 @@ visualize_vision = True
 
 car = RaceCar(dtype, device)
 car_controller = CarController(dtype, device)
-env = Environment(car, track_name, dtype, device, render=render, random_spawn=random_spawn, visualize_vision=visualize_vision)
+env = Environment(
+    car,
+    track_name,
+    dtype,
+    device,
+    render=render,
+    random_spawn=random_spawn,
+    visualize_vision=visualize_vision,
+)
 
 vision, crashed = env.Reset()
 
 while True:
-    if(crashed == True):
+    if crashed:
         vision, crashed = env.Reset()
         continue
 
-    wheel_angle, acceleration, quit = car_controller.GetActions()
-    
-    if(quit == True):
+    wheel_angle, acceleration, terminate = car_controller.GetActions()
+
+    if terminate:
         env.Quit()
 
     vision, crashed = env.Step(wheel_angle, acceleration, dt)
+
