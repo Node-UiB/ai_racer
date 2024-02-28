@@ -42,4 +42,3 @@ class RaceCar(Car):
             dtype=dtype,
             device=device,
         )
-

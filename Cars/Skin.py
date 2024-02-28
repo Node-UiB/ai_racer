@@ -14,4 +14,3 @@ class Skin:
         self.crashed_car_color = crashed_car_color
         self.vision_lines_color = vision_lines_color
         self.outline_color = outline_color
-

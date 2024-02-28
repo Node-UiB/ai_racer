@@ -68,4 +68,3 @@ class Camera:
             self.rotation_matrix
             @ (local_positions - self.local_screen_center[None])[..., None]
         )[..., 0] / self.pixel_density + self.position[None]
-

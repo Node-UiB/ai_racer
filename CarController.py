@@ -121,4 +121,3 @@ class CarController:
         self.Update()
 
         return self.wheel_angle.clone(), self.acceleration.clone(), self.quit
-
