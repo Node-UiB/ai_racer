@@ -4,6 +4,8 @@ import torch as T
 import numpy as np
 import pygame as pg
 
+from Track import Track
+
 from math import floor
 from typing import List, Tuple
 
@@ -52,7 +54,7 @@ class TrackBuilder:
 
 
     def SetAttributes(self):
-        self.track_width = 5
+        self.track_width = 7
         self.save_dir = "Tracks"
 
         self.key_binds = {"KEYDOWN" : {"q" : self.Quit,
@@ -76,7 +78,7 @@ class TrackBuilder:
         
         self.cursor_radius = 5.0
         self.way_point_radius = 3.0
-        self.rail_handle_radius = 2.0
+        self.rail_handle_radius = 1.5
 
         self.background_color = (0, 0, 0)
         self.track_color = (5, 5, 5)
@@ -87,7 +89,7 @@ class TrackBuilder:
         self.rail_handle_hover_color = (255, 255, 255)
         self.cursor_color = (255, 255, 0)
         
-        self.start_line_color = (255, 255, 255)
+        self.start_line_color = (255, 255, 0)
 
         self.left_mouse_button = False
 
@@ -96,6 +98,11 @@ class TrackBuilder:
 
         self.drag_index = -1
         self.drag_type = -1
+
+        self.saving = False
+
+        self.dtype = T.float64
+        self.device = "cpu"
 
 
     def ZoomIn(self):
@@ -146,6 +153,8 @@ class TrackBuilder:
 
     def DeletePoint(self):
         if(self.closed == True):
+            self.background_color = (0, 0, 0)
+
             if(self.point_hover_index == -1 and self.point_hover_type == -1):
                 self.closed = False
 
@@ -168,7 +177,9 @@ class TrackBuilder:
 
             self.CalculateRails()
             
-        elif(self.n_points > 0 and self.point_hover_type == 0):
+        elif(self.n_points > 0 and self.point_hover_type <= 0):
+            self.background_color = (0, 0, 0)
+
             self.points.pop(self.point_hover_index)
             self.left_rails.pop(self.point_hover_index)
             self.right_rails.pop(self.point_hover_index)
@@ -177,7 +188,7 @@ class TrackBuilder:
             if(self.point_hover_index == 0):
                 self.edited_rails[0] = False
 
-            elif(self.point_hover_index == self.n_points - 1):
+            elif(self.n_points > 1 and (self.point_hover_index == self.n_points - 1 or self.point_hover_index == -1)):
                 self.edited_rails[-1] = False
 
             self.n_points -= 1
@@ -186,7 +197,13 @@ class TrackBuilder:
 
     
     def DragPoint(self):
+        if(self.drag_index >= self.n_points):
+            print("Fixed")
+            return
+        
         if(self.drag_index != -1):
+            self.background_color = (0, 0, 0)
+
             if(self.drag_type == 0):
                 if(self.edited_rails[self.drag_index] == True):
                     self.left_rails[self.drag_index] = (self.left_rails[self.drag_index][0] + self.global_mouse_pos[0] - self.points[self.drag_index][0], self.left_rails[self.drag_index][1] + self.global_mouse_pos[1] - self.points[self.drag_index][1])
@@ -530,23 +547,38 @@ class TrackBuilder:
 
     
     def Quit(self):
-        pg.quit()
-        sys.exit()
+        if(self.saving == False):
+            pg.quit()
+            sys.exit()
+
+
+    def GetTrackName(self) -> str:
+        current_track_names = os.listdir(self.save_dir)
+        current_track_numbers = [int(name.split("-")[1]) for name in current_track_names if "-" in name]
+        new_track_numbers = list(range(1, len(current_track_numbers) + 2))
+
+        for new_track_number in new_track_numbers:
+            if(new_track_number not in current_track_numbers):
+                return f"Track-{new_track_number}"
 
 
     def Save(self):
-        if(self.closed == False):
+        if(self.closed == False or self.background_color == (5, 5, 5)):
             return
+        
+        self.saving = True
         
         left_rails = T.as_tensor(self.left_rails, dtype=T.float32)
         right_rails = T.as_tensor(self.right_rails, dtype=T.float32)
         points = T.as_tensor(self.points, dtype=T.float32)
 
+        left_rails -= points[0]
+        right_rails -= points[0]
+        points = points - points[0]
+
         os.makedirs(self.save_dir, exist_ok=True)
 
-        n_tracks = len(os.listdir(self.save_dir))
-        track_name = f"Track-{n_tracks + 1}"
-
+        track_name = self.GetTrackName()
         track_save_dir = f"{self.save_dir}//{track_name}"
 
         os.makedirs(track_save_dir, exist_ok=True)
@@ -555,10 +587,14 @@ class TrackBuilder:
 
         self.screen.fill(self.background_color)
         self.DrawRoad()
-        self.DrawRails()
         self.DrawStartLine()
+        self.DrawRails()
 
         pg.image.save(self.screen, f"{track_save_dir}//preview.png")
+
+        self.background_color = (5, 5, 5)
+
+        self.saving = False
 
 
 if(__name__ == "__main__"):
