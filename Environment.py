@@ -210,4 +210,3 @@ class Environment:
             self.clock.tick(1 / dt)
 
         return self.car.vision.clone(), self.car.crashed
-

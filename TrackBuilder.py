@@ -729,7 +729,7 @@ class TrackBuilder:
             pg.quit()
             sys.exit()
 
-    def GetTrackName(self) -> str:
+    def GetTrackName(self) -> str | None:
         current_track_names = os.listdir(self.save_dir)
         current_track_numbers = [
             int(name.split("-")[1]) for name in current_track_names if "-" in name
@@ -780,4 +780,3 @@ class TrackBuilder:
 
 if __name__ == "__main__":
     builder = TrackBuilder()
-

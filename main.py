@@ -40,4 +40,3 @@ while True:
         env.Quit()
 
     vision, crashed = env.Step(wheel_angle, acceleration, dt)
-
