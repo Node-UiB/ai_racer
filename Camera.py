@@ -1,5 +1,5 @@
 import torch as T
-from linalg import get_rotation_matrix
+from LinAlg import LinAlg
 from typing import Optional
 
 
@@ -36,7 +36,7 @@ class Camera:
         )
 
     def UpdateRotationMatrix(self):
-        self.rotation_matrix = get_rotation_matrix(self.angle)
+        self.rotation_matrix = LinAlg.get_rotation_matrix(self.angle)
         self.inv_rotation_matrix = self.rotation_matrix.transpose(1, 0)
 
     def Update(
@@ -68,4 +68,3 @@ class Camera:
             self.rotation_matrix
             @ (local_positions - self.local_screen_center[None])[..., None]
         )[..., 0] / self.pixel_density + self.position[None]
-
