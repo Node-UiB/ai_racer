@@ -725,7 +725,7 @@ class TrackBuilder:
             pg.display.flip()
 
     def Quit(self):
-        if self.is_saving:
+        if not self.is_saving:
             pg.quit()
             sys.exit()
 
@@ -741,7 +741,7 @@ class TrackBuilder:
                 return f"Track-{new_track_number}"
 
     def Save(self):
-        if self.is_closed or self.background_color == (5, 5, 5):
+        if not self.is_closed or self.background_color == (5, 5, 5):
             return
 
         self.is_saving = True
@@ -779,4 +779,4 @@ class TrackBuilder:
 
 
 if __name__ == "__main__":
-    pass
+    builder = TrackBuilder()
