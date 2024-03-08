@@ -1,5 +1,5 @@
 import torch as T
-from linalg import *
+from LinAlg import LinAlg
 from Cars.Skin import Skin
 
 
@@ -78,10 +78,10 @@ class Car:
         )
 
     def UpdateCarRotationMatrix(self):
-        self.car_rotaion_matrix = get_rotation_matrix(self.car_angle)
+        self.car_rotaion_matrix = LinAlg.get_rotation_matrix(self.car_angle)
 
     def UpdateGlobalCarLines(self):
-        self.global_car_lines = get_lines(
+        self.global_car_lines = LinAlg.get_lines(
             self.car_position[None]
             + (self.car_rotaion_matrix @ self.local_car_points[..., None])[..., 0],
             True,
@@ -132,15 +132,17 @@ class Car:
 
         self.car_position += (
             center_of_rotation
-            - (get_rotation_matrix(angle_delta) @ center_of_rotation[..., None])[..., 0]
+            - (
+                LinAlg.get_rotation_matrix(angle_delta) @ center_of_rotation[..., None]
+            )[..., 0]
         )
         self.car_angle += angle_delta
 
     def Crashed(self, track_lines: T.Tensor) -> T.Tensor:
-        return intersecting(self.global_car_lines, track_lines)
+        return LinAlg.intersecting(self.global_car_lines, track_lines)
 
     def See(self, track_lines: T.Tensor) -> T.Tensor:
-        return get_truncated_depth(self.global_ray_lines, track_lines)
+        return LinAlg.get_truncated_depth(self.global_ray_lines, track_lines)
 
     def Reset(self, position: T.Tensor, car_angle: T.Tensor, track_lines: T.Tensor):
         self.car_angle = car_angle

@@ -1,6 +1,6 @@
 import os
 import torch as T
-from linalg import get_lines
+from LinAlg import LinAlg
 from typing import Tuple
 
 
@@ -29,8 +29,8 @@ class Track:
         self.SetTrackLines()
 
     def SetTrackLines(self):
-        left_rail_lines = get_lines(self.left_rails, closed=True)
-        right_rail_lines = get_lines(self.right_rails, closed=True)
+        left_rail_lines = LinAlg.get_lines(self.left_rails, closed=True)
+        right_rail_lines = LinAlg.get_lines(self.right_rails, closed=True)
 
         self.track_lines = T.concat((left_rail_lines, right_rail_lines), dim=0)
 
