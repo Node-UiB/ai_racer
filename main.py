@@ -1,10 +1,11 @@
 import torch as T
 
+from Reward import Reward
 from Cars.RaceCar import RaceCar
-from CarController import CarController
 from Environment import Environment
+from CarController import CarController
 
-device = "cuda"
+device = "cpu"
 dtype = T.float64
 
 track_name = "Track-1"
@@ -17,11 +18,13 @@ visualize_vision = True
 
 car = RaceCar(dtype, device)
 car_controller = CarController(dtype, device)
+reward_function = Reward(1, 10, 100)
 env = Environment(
     car,
     track_name,
     dtype,
     device,
+    reward_function,
     render=render,
     random_spawn=random_spawn,
     visualize_vision=visualize_vision,
@@ -39,4 +42,4 @@ while True:
     if terminate:
         env.Quit()
 
-    vision, crashed = env.Step(wheel_angle, acceleration, dt)
+    vision, reward, crashed = env.Step(wheel_angle, acceleration, dt)

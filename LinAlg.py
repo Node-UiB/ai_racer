@@ -1,7 +1,5 @@
 import torch as T
 
-import matplotlib.pyplot as plt
-
 
 class LinAlg:
 
@@ -124,40 +122,44 @@ class LinAlg:
         intersecting_mask = LinAlg.get_intersecting_mask(ts)
 
         return T.any(intersecting_mask)
+    
+    @staticmethod
+    def get_distance_to_lines(position : T.Tensor, lines : T.Tensor) -> T.Tensor:
+        a = lines[..., 0]
+        ab = lines[..., 1]
 
+        ab_square = T.sum(ab ** 2, dim=-1)
 
-if __name__ == "__main__":
-    dtype = T.float64
-    device = "cuda:0" if T.cuda.is_available() else "cpu"
+        ts = T.sum((position[None] - a) * ab, dim=-1) / ab_square
 
-    car_points = T.as_tensor(
-        [[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0], [0.0, 0.0]],
-        dtype=dtype,
-        device=device,
-    )
-    left_rail = T.as_tensor(
-        [[-2.0, 3.0], [0.0, 3.0], [1.0, -1.0], [-1.0, 3.0]], dtype=dtype, device=device
-    )
+        ts_too_small_mask = ts < 0
+        ts_too_big_mask = ts > 1
 
-    la = LinAlg()
+        ts[ts_too_small_mask] = 0.0
+        ts[ts_too_big_mask] = 1.0
 
-    car_lines = la.get_lines(car_points, closed=False)
-    left_rail_lines = la.get_lines(left_rail, closed=False)
+        ds = T.sqrt(T.sum((position[None] - a - ts[..., None] * ab) ** 2, dim=-1))
 
-    intersection_points = la.get_intersection_points(car_lines, left_rail_lines)
+        return ds
+    
+    @staticmethod
+    def get_distance_along_lines(position : T.Tensor, lines : T.Tensor) -> T.Tensor:
+        a = lines[..., 0]
+        ab = lines[..., 1]
 
-    car_points = car_points.cpu().numpy()
-    left_rail = left_rail.cpu().numpy()
+        ab_square = T.sum(ab ** 2, dim=-1)
 
-    intersection_points = intersection_points.cpu().numpy()
+        ts = T.sum((position[None] - a) * ab, dim=-1) / ab_square
 
-    plt.plot(car_points[:, 0], car_points[:, 1], c="red", label="Car")
-    plt.plot(left_rail[:, 0], left_rail[:, 1], c="black", label="Road")
-    plt.scatter(
-        intersection_points[:, 0],
-        intersection_points[:, 1],
-        c="blue",
-        label="Intersection Points",
-    )
-    plt.legend()
-    plt.show()
+        ts_too_small_mask = ts < 0
+        ts_too_big_mask = ts > 1
+
+        ts[ts_too_small_mask] = 0.0
+        ts[ts_too_big_mask] = 1.0
+
+        distance_to_line = T.sqrt(T.sum((position[None] - a - ts[..., None] * ab) ** 2, dim=-1))
+        nearest_line_index = T.argmin(distance_to_line, dim=0)
+        distance_along_line = ts[nearest_line_index] * T.sqrt(ab_square[nearest_line_index])
+
+        return nearest_line_index, distance_along_line
+    
