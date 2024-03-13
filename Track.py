@@ -32,6 +32,8 @@ class Track:
         left_rail_lines = LinAlg.get_lines(self.left_rails, closed=True)
         right_rail_lines = LinAlg.get_lines(self.right_rails, closed=True)
 
+        self.way_point_lines = LinAlg.get_lines(self.points, closed=True)
+        self.way_point_distances = T.sqrt(T.sum(self.way_point_lines[..., 1] ** 2, dim=-1))
         self.track_lines = T.concat((left_rail_lines, right_rail_lines), dim=0)
 
     @staticmethod

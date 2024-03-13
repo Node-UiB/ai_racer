@@ -5,6 +5,7 @@ import torch as T
 from Car import Car
 from Track import Track
 from Camera import Camera
+from Reward import Reward
 
 from typing import Tuple
 from random import randint
@@ -17,12 +18,14 @@ class Environment:
         track_name: str,
         dtype: T.dtype,
         device: str,
+        reward_function: Reward,
         render: bool = True,
         random_spawn: bool = False,
         visualize_vision: bool = False,
     ):
         self.car = car
         self.track = Track.Load(track_name, dtype=dtype, device=device)
+        self.reward_function = reward_function
 
         self.dtype = dtype
         self.device = device
@@ -197,7 +200,7 @@ class Environment:
 
     def Step(
         self, wheel_angle: T.Tensor, acceleration: T.Tensor, dt: float
-    ) -> Tuple[T.Tensor, bool]:
+    ) -> Tuple[T.Tensor, T.Tensor, bool]:
         self.car.Step(wheel_angle, acceleration, self.track.track_lines, dt)
 
         if self.render:
@@ -209,4 +212,6 @@ class Environment:
             self.Render()
             self.clock.tick(1 / dt)
 
-        return self.car.vision.clone(), self.car.crashed
+        reward = self.reward_function(self.car.car_position, self.track, self.car.crashed, dt)
+
+        return self.car.vision.clone(), reward, self.car.crashed
