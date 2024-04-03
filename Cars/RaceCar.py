@@ -13,6 +13,7 @@ class RaceCar(Car):
         car_wheelbase_ratio = 0.9
         car_track_ratio = 1.0
 
+        max_speed = 50
         max_wheel_angle = T.pi * 24 / 180
         max_acceleration = 40.0
 
@@ -33,6 +34,7 @@ class RaceCar(Car):
             car_height,
             car_wheelbase_ratio,
             car_track_ratio,
+            max_speed,
             max_wheel_angle,
             max_acceleration,
             fov,

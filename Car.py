@@ -11,6 +11,7 @@ class Car:
         car_height: float,
         car_wheelbase_ratio: float,
         car_track_ratio: float,
+        max_speed: float,
         max_wheel_angle: float,
         max_acceleration: float,
         fov: float,
@@ -31,6 +32,7 @@ class Car:
         self.car_wheelbase = car_length * car_wheelbase_ratio
         self.car_track = car_width * car_track_ratio
 
+        self.max_speed = T.tensor(max_speed, dtype=dtype, device=device)
         self.max_wheel_angle = max_wheel_angle
         self.max_acceleration = max_acceleration
 
@@ -132,9 +134,9 @@ class Car:
 
         self.car_position += (
             center_of_rotation
-            - (
-                LinAlg.get_rotation_matrix(angle_delta) @ center_of_rotation[..., None]
-            )[..., 0]
+            - (LinAlg.get_rotation_matrix(angle_delta) @ center_of_rotation[..., None])[
+                ..., 0
+            ]
         )
         self.car_angle += angle_delta
 
@@ -160,6 +162,11 @@ class Car:
         dt: float,
     ):
         self.car_speed += acceleration * self.max_acceleration * dt
+
+        if self.car_speed > self.max_speed:
+            self.car_speed = self.max_speed.clone()
+        elif self.car_speed < -self.max_speed:
+            self.car_speed = -self.max_speed.clone()
 
         if wheel_angle == 0.0:
             self.car_position += self.car_speed * dt * self.car_rotaion_matrix[:, 0]
