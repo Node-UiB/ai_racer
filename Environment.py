@@ -62,7 +62,7 @@ class Environment:
 
         return start_position, start_angle
 
-    def Reset(self) -> Tuple[T.Tensor, bool]:
+    def Reset(self) -> Tuple[T.Tensor, T.Tensor]:
         spawn_position, spawn_angle = self.GetSpawn()
         self.car.Reset(spawn_position, spawn_angle, self.track.track_lines)
 
@@ -74,9 +74,7 @@ class Environment:
                 new_pixel_density=15.0,
             )
 
-        return self.car.See(self.track.track_lines), self.car.Crashed(
-            self.track.track_lines
-        )
+        return self.car.GetObservation(), self.car.Crashed(self.track.track_lines)
 
     def DrawTrack(self):
         self.screen.fill((0, 50, 0))
@@ -200,7 +198,7 @@ class Environment:
 
     def Step(
         self, wheel_angle: T.Tensor, acceleration: T.Tensor, dt: float
-    ) -> Tuple[T.Tensor, T.Tensor, bool]:
+    ) -> Tuple[T.Tensor, T.Tensor, T.Tensor]:
         self.car.Step(wheel_angle, acceleration, self.track.track_lines, dt)
 
         if self.render:
@@ -212,6 +210,8 @@ class Environment:
             self.Render()
             self.clock.tick(1 / dt)
 
-        reward = self.reward_function(self.car.car_position, self.track, self.car.crashed, dt)
+        reward = self.reward_function(
+            self.car.car_position, self.track, self.car.crashed, dt
+        )
 
-        return self.car.vision.clone(), reward, self.car.crashed
+        return self.car.GetObservation(), reward, self.car.crashed

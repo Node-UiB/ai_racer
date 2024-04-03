@@ -8,7 +8,7 @@ from CarController import CarController
 device = "cpu"
 dtype = T.float64
 
-track_name = "Track-1"
+track_name = "Track-2"
 
 dt = 1 / 60
 
@@ -42,4 +42,4 @@ while True:
     if terminate:
         env.Quit()
 
-    vision, reward, crashed = env.Step(wheel_angle, acceleration, dt)
+    observation, reward, crashed = env.Step(wheel_angle, acceleration, dt)

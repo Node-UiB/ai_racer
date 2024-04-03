@@ -181,6 +181,9 @@ class Car:
 
         self.Update(track_lines)
 
+    def GetObservation(self) -> T.Tensor:
+        return T.concat((self.vision, self.car_speed[None]), dim=0)
+
 
 if __name__ == "__main__":
     pass
